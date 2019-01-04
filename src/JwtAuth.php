@@ -41,7 +41,7 @@ class JwtAuth extends JWT
             'exp' => config()['jwt']['exp'], //过期时间,这里设置2个小时
             'data' => $data
         ];
-        $_SESSION[config()['jwt']['session_key']] = JWT::encode($token, $key);
+        session(config()['jwt']['session_key'], JWT::encode($token, $key));
         return json_encode(array('code' => 1, 'message' => JWT::encode($token, $key)));
 
     }
@@ -58,10 +58,10 @@ class JwtAuth extends JWT
         try {
             JWT::$leeway = 60;
             JWT::decode($token, $key, ['HS256']);
-            if ($token != $_SESSION[config()['jwt']['session_key']]) {
+            if ($token != session(config()['jwt']['session_key'])) {
                 return json_encode(array('code' => -2, 'message' => 'token is error'));
             }
-
+            return json_encode(array('code' => 1, 'message' => 'success'));
         } catch (SignatureInvalidException $e) {//签名不正确
             return json_encode(array('code' => -2, 'message' => $e->getMessage()));
         } catch (BeforeValidException $e) {//签名在某个时间点之后才能用
