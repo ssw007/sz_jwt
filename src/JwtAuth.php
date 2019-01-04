@@ -20,8 +20,6 @@ class JwtAuth extends JWT
      */
     public static function createToken($model, $data)
     {
-        session_start();
-
         if (empty($data) || empty($model)) {
             return json_encode(array('code' => -2, 'message' => "参数不能为空"));
         }
