@@ -7,9 +7,6 @@
  */
 
 namespace Sswbase\JWT;
-
-use think\facade\Cache;
-
 class JwtAuth extends JWT
 {
 
@@ -49,28 +46,13 @@ class JwtAuth extends JWT
      * @param $token
      * @return false|string
      */
-    public static function validateToken($token, $tokenKey, $tokenInfo)
+    public static function validateToken($token)
     {
 
         $key = config()['jwt']['key'];
         try {
             JWT::$leeway = 60;
-            $decoded = JWT::decode($token, $key, config()['jwt']['algorithms']);
-
-//            if ($token != session(config()['jwt']['session_key'])) {
-//                return json_encode(array('code' => -2, 'message' => 'token is error'));
-//            }
-
-            $getTokenUser = Cache::get($tokenInfo . ':' . $decoded->data->username);
-            if (!$getTokenUser) {
-                return json(array('code' => -2, 'message' => 'token not find'));
-            }
-            //判断token是否相同
-            $getTokenInfo = Cache::get($tokenKey . ':' . $decoded->data->username);
-            if ($getTokenInfo != explode(' ', $_SERVER['HTTP_AUTHORIZATION'])[1]) {
-                return json(array('code' => -2, 'message' => 'token is error'));
-            }
-
+            JWT::decode($token, $key, config()['jwt']['algorithms']);
             return json_encode(array('code' => 1, 'message' => 'success'));
         } catch (SignatureInvalidException $e) {//签名不正确
             return json_encode(array('code' => -2, 'message' => $e->getMessage()));
