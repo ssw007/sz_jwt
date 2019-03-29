@@ -8,6 +8,7 @@
 
 namespace Sswbase\JWT;
 
+use think\facade\Cache;
 
 class JwtAuth extends JWT
 {
@@ -39,7 +40,6 @@ class JwtAuth extends JWT
             'exp' => config()['jwt']['exp'], //过期时间,这里设置2个小时
             'data' => $data
         ];
-        session(config()['jwt']['session_key'], JWT::encode($token, $key));
         return json_encode(array('code' => 1, 'message' => JWT::encode($token, $key)));
 
     }
@@ -49,16 +49,28 @@ class JwtAuth extends JWT
      * @param $token
      * @return false|string
      */
-    public static function validateToken($token)
+    public static function validateToken($token, $tokenKey, $tokenInfo)
     {
 
         $key = config()['jwt']['key'];
         try {
             JWT::$leeway = 60;
-            JWT::decode($token, $key, ['HS256']);
-            if ($token != session(config()['jwt']['session_key'])) {
-                return json_encode(array('code' => -2, 'message' => 'token is error'));
+            $decoded = JWT::decode($token, $key, config()['jwt']['algorithms']);
+
+//            if ($token != session(config()['jwt']['session_key'])) {
+//                return json_encode(array('code' => -2, 'message' => 'token is error'));
+//            }
+
+            $getTokenUser = Cache::get($tokenInfo . ':' . $decoded->data->username);
+            if (!$getTokenUser) {
+                return json(array('code' => -2, 'message' => 'token not find'));
             }
+            //判断token是否相同
+            $getTokenInfo = Cache::get($tokenKey . ':' . $decoded->data->username);
+            if ($getTokenInfo != explode(' ', $_SERVER['HTTP_AUTHORIZATION'])[1]) {
+                return json(array('code' => -2, 'message' => 'token is error'));
+            }
+
             return json_encode(array('code' => 1, 'message' => 'success'));
         } catch (SignatureInvalidException $e) {//签名不正确
             return json_encode(array('code' => -2, 'message' => $e->getMessage()));
