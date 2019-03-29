@@ -19,7 +19,7 @@ class JwtAuth extends JWT
     public static function createToken($model, $data)
     {
         if (empty($data) || empty($model)) {
-            return json_encode(array('code' => -2, 'message' => "参数不能为空"));
+            return array('code' => -1, 'message' => "参数不能为空");
         }
         //获取用户标识
         $identifier = config()['jwt']['identifier'];
@@ -27,7 +27,7 @@ class JwtAuth extends JWT
         $getUser = $model->where($identifier, '=', $data[$identifier])->find();
 
         if (empty($getUser)) {
-            return json_encode(array('code' => -2, 'message' => '无法生成token'));
+            return array('code' => -1, 'message' => '无法生成token');
         }
         $token = [
             'iss' => config()['jwt']['iss'], //签发者 可选
@@ -37,7 +37,7 @@ class JwtAuth extends JWT
             'exp' => config()['jwt']['exp'], //过期时间,这里设置2个小时
             'data' => $data
         ];
-        return json_encode(array('code' => 1, 'message' => JWT::encode($token, $key)));
+        return array('code' => 1, 'message' => JWT::encode($token, $key));
 
     }
 
@@ -53,15 +53,15 @@ class JwtAuth extends JWT
         try {
             JWT::$leeway = 60;
             JWT::decode($token, $key, config()['jwt']['algorithms']);
-            return json_encode(array('code' => 1, 'message' => 'success'));
+            return array('code' => 1, 'message' => 'success');
         } catch (SignatureInvalidException $e) {//签名不正确
-            return json_encode(array('code' => -2, 'message' => $e->getMessage()));
+            return array('code' => -1, 'message' => $e->getMessage());
         } catch (BeforeValidException $e) {//签名在某个时间点之后才能用
-            return json_encode(array('code' => -2, 'message' => $e->getMessage()));
+            return array('code' => -1, 'message' => $e->getMessage());
         } catch (ExpiredException $e) {//token过期
-            return json_encode(array('code' => -2, 'message' => $e->getMessage()));
+            return array('code' => -1, 'message' => $e->getMessage());
         } catch (\Exception $e) {//其他错误
-            return json_encode(array('code' => -2, 'message' => $e->getMessage()));
+            return array('code' => -1, 'message' => $e->getMessage());
         }
     }
 }
