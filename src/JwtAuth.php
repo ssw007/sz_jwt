@@ -6,7 +6,7 @@
  * Time: 17:10
  */
 
-namespace Firebase\JWT;
+namespace Sswbase\JWT;
 
 
 class JwtAuth extends JWT

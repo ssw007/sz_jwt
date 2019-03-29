@@ -14,7 +14,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Firebase\\JWT\\": "src"
+      "Sswbase\\JWT\\": "src"
     }
   },
   "require-dev": {
